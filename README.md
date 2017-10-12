@@ -2,10 +2,14 @@
 
 ![FlickToDismiss hero image](FlickToDismiss.gif)
 
+## Why this fork?
+
+- Support for Swift 3+
+- Support for zooming in on images
+
 ## Requirements
 
-- iOS 8.0+
-- Xcode 7.3
+- iOS 9.0+
 
 ## Installation
 
