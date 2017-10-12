@@ -25,12 +25,14 @@ public enum AnimationType: String {
 
 /// Presents a UIView which can dismissed by flicking it off the screen.
 @IBDesignable
-open class FlickToDismissViewController: UIViewController {
+open class FlickToDismissViewController: UIViewController, UIScrollViewDelegate {
 
     // MARK:- Properties
     
     /// Flickable UIView.
     @IBOutlet open var flickableView: UIView!
+    var scrollView: UIScrollView = UIScrollView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+    
     fileprivate var panGestureRecognizer: UIPanGestureRecognizer!
     /// Array of FlickToDismissOptions.
     fileprivate var options: [FlickToDismissOption]?
@@ -86,6 +88,11 @@ open class FlickToDismissViewController: UIViewController {
     fileprivate func setup() {
         // Setup pan gesture
         panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(FlickToDismissViewController.handleAttachmentGesture(_:)))
+        
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(FlickToDismissViewController.handleDoubleTapGesture(_:)))
+        doubleTapGesture.numberOfTapsRequired = 2
+        scrollView.addGestureRecognizer(doubleTapGesture)
+        
         // Setup animator
         animator = UIDynamicAnimator(referenceView: view)
         // Apply options
@@ -118,7 +125,26 @@ open class FlickToDismissViewController: UIViewController {
         if flickableView.constraints.count == 0 {
             flickableView.center = view.center
         }
-        view.addSubview(flickableView)
+        
+        scrollView.delegate = self
+        scrollView.alwaysBounceVertical = false
+        scrollView.alwaysBounceHorizontal = false
+        scrollView.showsVerticalScrollIndicator = true
+        scrollView.flashScrollIndicators()
+        
+        scrollView.minimumZoomScale = 1.0
+        scrollView.maximumZoomScale = 10.0
+     
+        view.addSubview(scrollView)
+        
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        
+        scrollView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        
+        scrollView.addSubview(flickableView!)
     }
     
     // MARK: Layout
@@ -130,10 +156,25 @@ open class FlickToDismissViewController: UIViewController {
         }
     }
     
+    @objc fileprivate func handleDoubleTapGesture(_ panGesture: UIPanGestureRecognizer) {
+        if scrollView.zoomScale == 1 {
+            let frame = CGRect(x: scrollView.frame.width / 4, y: scrollView.frame.height / 4, width: scrollView.frame.width / 2, height: scrollView.frame.height / 2)
+            
+            scrollView.zoom(to: frame, animated: true)
+        } else {
+            scrollView.setZoomScale(1, animated: true)
+        }
+    }
+        
     // MARK:- Pan Gesture
     
     @objc fileprivate func handleAttachmentGesture(_ panGesture: UIPanGestureRecognizer) {
+        guard !scrollView.isZooming else {
+            return
+        }
+        
         let location = panGesture.location(in: view)
+
         let boxLocation = panGesture.location(in: flickableView)
         switch panGesture.state {
         case .began:
@@ -181,4 +222,7 @@ open class FlickToDismissViewController: UIViewController {
         }
     }
     
+    public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return flickableView
+    }
 }
