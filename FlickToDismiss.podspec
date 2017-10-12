@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.author       = { "Jake Lawson" => "jakelawson1@hotmail.com" }
   s.source       = { :git => "https://github.com/jakelawson1/FlickToDismiss.git", :tag => "#{s.version}" }
 
-  s.platform     = :ios, "8.0"
+  s.platform     = :ios, "9.0"
 
   s.source_files = 'Source/**'
   s.framework    = "UIKit"
